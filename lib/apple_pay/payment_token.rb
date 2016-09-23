@@ -2,8 +2,6 @@ module ApplePay
   class PaymentToken
     attr_accessor :token
 
-    class VerificationError < Error; end
-
     def initialize(token)
       self.token = token.with_indifferent_access
     end
@@ -13,8 +11,21 @@ module ApplePay
         token[:paymentData][:signature],
         data: token[:paymentData][:data],
         ephemeral_public_key: token[:paymentData][:header][:ephemeralPublicKey],
-        transaction_id: token[:paymentData][:header][:transactionId]
+        transaction_id: token[:paymentData][:header][:transactionId],
+        application_data: token[:paymentData][:header][:applicationData]
       ).verify!
+      self
+    end
+
+    def decrypt!(client_cert, private_key)
+      decrypted = EncryptedData.new(
+        token[:paymentData][:data]
+      ).decrypt!(
+        client_cert,
+        private_key,
+        token[:paymentData][:header][:ephemeralPublicKey]
+      )
+      JSON.parse decrypted
     end
   end
 end

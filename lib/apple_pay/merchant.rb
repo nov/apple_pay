@@ -11,7 +11,7 @@ module ApplePay
     end
 
     def authenticate(client_cert, private_key)
-      self.client_cert = client_cert
+      self.client_cert = client_cert # NOTE: Apple Pay Merchant Identity
       self.private_key = private_key
       self
     end
