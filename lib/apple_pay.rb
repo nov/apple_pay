@@ -7,7 +7,7 @@ module ApplePay
     File.join(__dir__, '../VERSION')
   ).strip
 
-  class APIError < StandardError; end
+  class Error < StandardError; end
 
   def self.logger
     @@logger
@@ -38,4 +38,5 @@ module ApplePay
 end
 
 require 'apple_pay/merchant'
+require 'apple_pay/payment_token'
 require 'apple_pay/request_filter/debugger'

@@ -4,8 +4,8 @@ Gem::Specification.new do |spec|
   spec.authors = ['Nov Matake']
   spec.email = ['nov@matake.jp']
 
-  spec.summary = %q{Apple Pay Merchant Backend}
-  spec.description = %q{Apple Pay Merchant Backend}
+  spec.summary = %q{Apple Pay Merchant Backend}
+  spec.description = %q{Apple Pay Merchant Backend}
   spec.homepage = 'https://github.com/nov/apple_pay.git'
   spec.license = 'MIT'
   spec.files = `git ls-files -z`.split("\x0").reject do |f|

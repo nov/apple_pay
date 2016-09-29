@@ -1,5 +1,7 @@
 module ApplePay
   class Merchant
+    class APIError < Error; end
+
     attr_accessor :identifier, :domain, :display_name, :client_cert, :private_key
 
     def initialize(identifier, domain:, display_name:)
