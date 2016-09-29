@@ -1,0 +1,9 @@
+{
+  "epochTimestamp": 1475120325902,
+  "merchantSessionIdentifier": "..merchantSessionIdentifier..",
+  "nonce": "nonce",
+  "merchantIdentifier": "..merchantIdentifier..",
+  "domainName": "apple-pay-js.github.io",
+  "displayName": "Nov Matake",
+  "signature": "..signature.."
+}
