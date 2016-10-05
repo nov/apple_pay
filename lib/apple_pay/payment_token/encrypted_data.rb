@@ -12,19 +12,21 @@ module ApplePay
       end
 
       def decrypt!(client_cert, private_key, ephemeral_public_key_or_wrapped_key) # NOTE: Payment Processing Certificate
-        merchant_id = merchant_id_in certificate
+        merchant_id = merchant_id_in client_cert
         shared_secret = shared_secret_derived_from private_key, ephemeral_public_key_or_wrapped_key
         symmetric_key = symmetric_key_derived_from merchant_id, shared_secret
-        AEAD::Cipher::AES_256_GCM.new(
-          symmetric_key,
-          iv_len: 16
-        ).decrypt("\x00" * 16, '', data)
+        cipher = OpenSSL::Cipher.new('aes-256-gcm')
+        cipher.decrypt
+        cipher.iv_len = 16 # NOTE: waiting ruby openssl update. https://github.com/ruby/ruby/pull/569
+        cipher.key = symmetric_key
+        cipher.auth_tag = data[-16..-1]
+        cipher.update(data[0..-17]) + cipher.final
       end
 
       private
 
-      def merchant_id_in(certificate)
-        merchant_id_with_prefix = certificate.extensions.detect do |ext|
+      def merchant_id_in(client_cert)
+        merchant_id_with_prefix = client_cert.extensions.detect do |ext|
           ext.oid == MERCHANT_ID_OID
         end
         raise DecryptionFailed, 'Merchant ID missing' unless merchant_id_with_prefix
@@ -44,7 +46,7 @@ module ApplePay
             ephemeral_public_key_or_wrapped_key
           )
         else
-          raise DecryptionFailed, 'Unknown algorithm'
+          raise DecryptionFailed, "Unknown algorithm (#{private_key.class})"
         end
       end
 
@@ -54,7 +56,7 @@ module ApplePay
 
       def shared_secret_derived_from_ec(private_key, ephemeral_public_key)
         public_key = OpenSSL::PKey::EC.new(
-          Base64.decode64 ephemeral_public_key_or_wrapped_key
+          Base64.decode64 ephemeral_public_key
         ).public_key
         point = OpenSSL::PKey::EC::Point.new(
           private_key.group,
@@ -64,16 +66,11 @@ module ApplePay
       end
 
       def symmetric_key_derived_from(merchant_id, shared_secret)
-        kdf_algorithm = "\x0D" + 'id-aes256-GCM'
-        kdf_party_v = merchant_id.scan(/../).inject("") { |binary,hn| binary << hn.to_i(16).chr }
-        kdf_info = kdf_algorithm + "Apple" + kdf_party_v
-
-        digest = Digest::SHA256.new
-        digest << 0.chr * 3
-        digest << 1.chr
-        digest << shared_secret
-        digest << kdf_info
-        digest.digest
+        OpenSSL::Digest::SHA256.digest(
+          "\x00" * 3 + "\x01" +
+          shared_secret +
+          "\x0D" + 'id-aes256-GCM' + 'Apple' + [merchant_id].pack("H*")
+        )
       end
     end
   end

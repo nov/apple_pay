@@ -32,3 +32,4 @@ end
 
 require 'apple_pay/payment_token/certificate_chain'
 require 'apple_pay/payment_token/signature'
+require 'apple_pay/payment_token/encrypted_data'
