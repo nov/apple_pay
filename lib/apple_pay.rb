@@ -1,7 +1,6 @@
 require 'active_support'
 require 'active_support/core_ext'
 require 'httpclient'
-require 'aead'
 
 module ApplePay
   VERSION = File.read(
