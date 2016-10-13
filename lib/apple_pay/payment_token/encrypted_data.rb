@@ -17,7 +17,7 @@ module ApplePay
         symmetric_key = symmetric_key_derived_from merchant_id, shared_secret
         cipher = OpenSSL::Cipher.new('aes-256-gcm')
         cipher.decrypt
-        cipher.iv_len = 16 # NOTE: waiting ruby openssl update. https://github.com/ruby/ruby/pull/569
+        cipher.iv_len = 16 # NOTE: require ruby 2.4.0+ & openssl gem v2.0.0+
         cipher.key = symmetric_key
         cipher.auth_tag = data[-16..-1]
         cipher.update(data[0..-17]) + cipher.final
